@@ -3,9 +3,9 @@
 ## Fork
 
 This project is a fork of sassoftware/viya4-deployment for running in an air-gapped (dark site) AWS VPC  
-See example [ansible-vars-v900-airgap.yaml](examples/ansible-vars-v900-airgap.yaml) file  
+Curently inline with [v9.0.0](https://github.com/sassoftware/viya4-deployment/releases/tag/v9.0.0)  
 
-Curently inline with v9.0.0
+See example [ansible-vars-v900-airgap.yaml](examples/ansible-vars-v900-airgap.yaml) file  
 
 To forward to customers:
 
