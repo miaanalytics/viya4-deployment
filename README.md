@@ -11,9 +11,9 @@ To forward to customers:
 
 ```
 cd viya4-deployment
-sudo docker build -t viya4-deployment-private-aws:9.0.0 .
-sudo docker save viya4-deployment-private-aws:9.0.0 -o /tmp/viya4-deployment-private-aws_9.0.0.tar
-aws s3 cp /tmp/viya4-deployment-private-aws_9.0.0.tar s3://mia-sas-viya-mirror
+sudo docker build -t viya4-deployment-airgapped-aws:9.0.0 .
+sudo docker save viya4-deployment-airgapped-aws:9.0.0 -o /tmp/viya4-deployment-airgapped-aws_9.0.0.docker.tar
+aws s3 cp /tmp/viya4-deployment-airgapped-aws_9.0.0.tar s3://mia-sas-viya-mirror/tools
 ```
 
 To use this image add this option to allow Helm running in the container to authenticate to AWS ECR:
