@@ -17,7 +17,7 @@
 - name: Update CSI_DRIVER_NFS_CONFIG and PG_NFS_CLIENT_CONFIG to add private settings
   set_fact:
     CSI_DRIVER_NFS_CONFIG: "{{ CSI_DRIVER_NFS_CONFIG | combine(CSI_DRIVER_NFS_CONFIG_PRIVATE, recursive=True) }}"
-    PG_NFS_CLIENT_CONFIG: "{{ PG_NFS_CLIENT_CONFIG | combine(PG_NFS_CLIENT_CONFIG_PRIVATE, recursive=True) }}"    
+    PG_NFS_CLIENT_CONFIG: "{{ CSI_DRIVER_NFS_PG_CONFIG | combine(CSI_DRIVER_NFS_PG_CONFIG_PRIVATE, recursive=True) }}"    
   when:
     - V4_CFG_INGRESS_MODE == "private"
   tags:
