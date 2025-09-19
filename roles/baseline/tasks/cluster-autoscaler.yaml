@@ -11,6 +11,17 @@
 # NOTE: This file is intended for use with cloud providers that support the Kubernetes Cluster Autoscaler,
 # such as AWS, Azure, and GCP. Configuration and values may need to be adjusted for your specific provider.
 
+
+# Update CLUSTER_AUTOSCALER_CONFIG with private settings if running in private mode and provider is supported
+- name: Update CLUSTER_AUTOSCALER_CONFIG to add private settings
+  set_fact:
+    CLUSTER_AUTOSCALER_CONFIG: "{{ CLUSTER_AUTOSCALER_CONFIG | combine(CLUSTER_AUTOSCALER_CONFIG_PRIVATE, recursive=True) }}"
+  when:
+    - V4_CFG_INGRESS_MODE == "private"
+  tags:
+    - install
+    - update
+
 # Deploy the cluster-autoscaler using Helm
 - name: Deploy cluster-autoscaler
   kubernetes.core.helm:

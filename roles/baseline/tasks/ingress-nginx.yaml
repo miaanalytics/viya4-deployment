@@ -11,7 +11,7 @@
 # Update INGRESS_NGINX_CONFIG with private ingress settings if running in private mode and provider is supported
 - name: Update INGRESS_NGINX_CONFIG to add private_ingress
   set_fact:
-    INGRESS_NGINX_CONFIG: "{{ INGRESS_NGINX_CONFIG | combine(private_ingress[PROVIDER], recursive=True) }}"
+    INGRESS_NGINX_CONFIG: "{{ INGRESS_NGINX_CONFIG | combine(INGRESS_NGINX_CONFIG_PRIVATE) | combine(private_ingress[PROVIDER], recursive=True) }}"
   when:
     - V4_CFG_INGRESS_MODE == "private"
     - PROVIDER in private_ingress

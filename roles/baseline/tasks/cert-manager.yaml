@@ -8,6 +8,17 @@
 # Chart Source: https://github.com/cert-manager/cert-manager/tree/master/deploy/charts/cert-manager
 # Purpose: Installs and manages cert-manager for TLS certificate management in Kubernetes.
 
+# Update CERT_MANAGER_CONFIG with private settings if running in private mode and provider is supported
+- name: Update CERT_MANAGER_CONFIG to add private settings
+  set_fact:
+    CERT_MANAGER_CONFIG: "{{ CERT_MANAGER_CONFIG | combine(CERT_MANAGER_CONFIG_PRIVATE, recursive=True) }}"
+  when:
+    - V4_CFG_INGRESS_MODE == "private"
+  tags:
+    - install
+    - update
+
+
 # Deploy the cert-manager controller using Helm
 - name: Deploy cert-manager
   kubernetes.core.helm:

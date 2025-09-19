@@ -12,6 +12,16 @@
 # Chart URL: https://github.com/kubernetes-sigs/metrics-server/tree/master/charts/metrics-server
 # Purpose: Collects resource metrics from K8s nodes and pods.
 
+# Update METRICS_SERVER_CONFIG with private settings if running in private mode and provider is supported
+- name: Update METRICS_SERVER_CONFIG to add private settings
+  set_fact:
+    METRICS_SERVER_CONFIG: "{{ METRICS_SERVER_CONFIG | combine(METRICS_SERVER_CONFIG_PRIVATE, recursive=True) }}"
+  when:
+    - V4_CFG_INGRESS_MODE == "private"
+  tags:
+    - install
+    - update
+
 # Check if the metrics-server service exists in the kube-system namespace
 - name: Check for metrics service
   kubernetes.core.k8s_info:
