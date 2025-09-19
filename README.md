@@ -2,8 +2,19 @@
 
 ## Fork
 
-This project is a fork of sassoftware/viya4-deployment for running in a private AWS VPC
-See example [ansible-vars](examples/ansible-vars.v900.private.yaml) file
+This project is a fork of sassoftware/viya4-deployment for running in an air-gapped (dark site) AWS VPC  
+See example [ansible-vars-v900-airgap.yaml](examples/ansible-vars-v900-airgap.yaml) file  
+
+Curently inline with v9.0.0
+
+To forward to customers:
+
+```
+cd viya4-deployment
+sudo docker build -t viya4-deployment-private-aws:9.0.0 .
+sudo docker save viya4-deployment-private-aws:9.0.0 -o /tmp/viya4-deployment-private-aws_9.0.0.tar
+aws s3 cp /tmp/viya4-deployment-private-aws_9.0.0.tar s3://mia-sas-viya-mirror
+```
 
 ## Table of Contents
 
