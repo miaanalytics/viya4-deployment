@@ -1,0 +1,206 @@
+## Cluster
+NAMESPACE: viya
+
+V4M_BASE_DOMAIN: prod.example.com
+
+## MISC
+DEPLOY: false # Set to false to stop at generating the manifest
+LOADBALANCER_SOURCE_RANGES: ['192.168.0.0/16','10.0.0.0/26']
+#KUBECONFIG: /.kube/config
+V4_DEPLOYMENT_OPERATOR_ENABLED: false # sas-orchestration does not phone home for entitlements (set to false for darksite)
+
+## Storage
+V4_CFG_MANAGE_STORAGE: true
+V4_CFG_RWX_FILESTORE_PATH: "/" # NOTE: EFS is "/" but NFS is "/export" (for NFS)
+
+## SAS Software Order
+V4_CFG_ORDER_NUMBER: 9D1QTG             # order number (VA only)
+V4_CFG_CADENCE_NAME: stable             # stable or lts
+V4_CFG_CADENCE_VERSION: "2025.03"       # cadence version
+## Providing the following three variables will bypass DAC using SAS Viya API (DAC 6.2.0+):
+## docker run ... --volume SAS/SASViyaV4_9CV1JC_stable_2024.01_20240223.1708706864063_deploymentAssets_2024-02-25T082154.tgz:/config/viya_order_assets
+##                --volume SAS/SASViyaV4_9CV1JC_stable_2024.01_license_2024-01-30T073135.jwt:/config/viya_order_license
+##                --volume SAS/SASViyaV4_9CV1JC_certs.zip:/config/viya_order_certs
+V4_CFG_DEPLOYMENT_ASSETS: /config/viya_order_assets/               # container path to deployment assets
+V4_CFG_LICENSE: /config/viya_order_license/                        # container path to license file (.jwt)
+V4_CFG_CERTS: /config/viya_order_certs/                            # container path to viya certs
+
+
+## Path to sitedefault.yaml
+#V4_CFG_SITEDEFAULT: /config/sitedefault.yaml     # container path to sitedefault.yaml
+
+## CR Access
+V4_CFG_CR_URL: "855334947981.dkr.ecr.il-central-1.amazonaws.com/ips" # update this for your account and region, note "/viya" must match your viya namespace
+
+## Ingress
+V4_CFG_INGRESS_TYPE: ingress
+V4_CFG_INGRESS_MODE: "private"
+# if no FQDN dns registration, use the DNS of the private NLB, here is a way to get that automaticatlly:
+# V4_CFG_INGRESS_FQDN: $(kubectl get service ingress-nginx-controller -n ingress-nginx -o jsonpath={'.status.loadBalancer.ingress[0].hostname'})
+V4_CFG_INGRESS_FQDN: a9cc6dcf8955b4f88827cf3cb0a8c502-1e8a726b64048e53.elb.il-central-1.amazonaws.com
+V4_CFG_TLS_MODE: "full-stack" # [full-stack|front-door|ingress-only|disabled]
+
+## Postgres
+V4_CFG_POSTGRES_SERVERS:
+  default:
+    internal: true
+    postgres_pvc_storage_size: 10Gi
+    postgres_pvc_access_mode: ReadWriteOnce
+    postgres_storage_class: sas
+    backrest_storage_class: sas
+
+## LDAP
+V4_CFG_EMBEDDED_LDAP_ENABLE: true   # Note: will require the DaC tool (openldap deployment) to be modded to point to ECR for openldap container image
+
+## Baseline configs are specifically for repos that use OCI for helm charts (like ECR)
+
+## Cert-manager config
+CERT_MANAGER_CHART_URL: "" # yes we want this blank because of how the ansible helm module expects OCI to be passed
+CERT_MANAGER_CHART_NAME: oci://855334947981.dkr.ecr.il-central-1.amazonaws.com/cert-manager
+CERT_MANAGER_CONFIG_PRIVATE:
+  image:
+    repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/quay.io/jetstack/cert-manager-controller
+  webhook:
+    image:
+      repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/quay.io/jetstack/cert-manager-webhook
+  cainjector:
+    image:
+      repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/quay.io/jetstack/cert-manager-cainjector
+  startupapicheck:
+    image:
+      repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/quay.io/jetstack/cert-manager-ctl
+
+## Metrics-server config
+METRICS_SERVER_CHART_URL: "" # yes we want this blank because of how the ansible helm module expects OCI to be passed
+METRICS_SERVER_CHART_NAME: oci://855334947981.dkr.ecr.il-central-1.amazonaws.com/metrics-server
+METRICS_SERVER_CONFIG_PRIVATE:
+  image:
+    repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/metrics-server/metrics-server
+  addonResizer:
+    image:
+      repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/autoscaling/addon-resizer
+
+## NGINX config
+INGRESS_NGINX_CHART_URL: "" # yes we want this blank because of how the ansible helm module expects OCI to be passed
+INGRESS_NGINX_CHART_NAME: oci://855334947981.dkr.ecr.il-central-1.amazonaws.com/ingress-nginx
+INGRESS_NGINX_CONFIG_PRIVATE:
+  controller:
+    image:
+      registry: 855334947981.dkr.ecr.il-central-1.amazonaws.com
+      image: ingress-nginx/controller
+      digest: sha256:2762f58c736a94271f41cdc31e9b1dd7928442ddf5a7c9c2fabebd594cc4b679
+    admissionWebhooks:
+      patch:
+        image:
+          registry: 855334947981.dkr.ecr.il-central-1.amazonaws.com
+          image: ingress-nginx/kube-webhook-certgen
+          digest: sha256:7571808f58767010abcfdf74fef1220768ce297d315be51c4f070c599b8133bd
+
+# nfs client config
+CSI_DRIVER_NFS_CHART_URL: ""
+CSI_DRIVER_NFS_CHART_NAME: "oci://855334947981.dkr.ecr.il-central-1.amazonaws.com/csi-driver-nfs"
+CSI_DRIVER_NFS_CONFIG_PRIVATE:
+  image:
+    baseRepo: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io
+    nfs:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/nfsplugin
+        tag: v4.11.0
+        pullPolicy: IfNotPresent
+    csiProvisioner:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-provisioner
+        tag: v5.2.0
+        pullPolicy: IfNotPresent
+    csiResizer:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-resizer
+        tag: v1.13.1
+        pullPolicy: IfNotPresent
+    csiSnapshotter:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-snapshotter
+        tag: v8.2.0
+        pullPolicy: IfNotPresent
+    livenessProbe:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/livenessprobe
+        tag: v2.15.0
+        pullPolicy: IfNotPresent
+    nodeDriverRegistrar:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-node-driver-registrar
+        tag: v2.13.0
+        pullPolicy: IfNotPresent
+    externalSnapshotter:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/snapshot-controller
+        tag: v8.2.0
+        pullPolicy: IfNotPresent
+
+# pg-storage class config
+CSI_DRIVER_NFS_PG_CHART_URL: ""
+CSI_DRIVER_NFS_PG_CHART_NAME: "oci://855334947981.dkr.ecr.il-central-1.amazonaws.com/csi-driver-nfs"
+CSI_DRIVER_NFS_PG_CONFIG_PRIVATE:
+  image:
+    baseRepo: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io
+    nfs:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/nfsplugin
+        tag: v4.11.0
+        pullPolicy: IfNotPresent
+    csiProvisioner:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-provisioner
+        tag: v5.2.0
+        pullPolicy: IfNotPresent
+    csiResizer:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-resizer
+        tag: v1.13.1
+        pullPolicy: IfNotPresent
+    csiSnapshotter:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-snapshotter
+        tag: v8.2.0
+        pullPolicy: IfNotPresent
+    livenessProbe:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/livenessprobe
+        tag: v2.15.0
+        pullPolicy: IfNotPresent
+    nodeDriverRegistrar:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/csi-node-driver-registrar
+        tag: v2.13.0
+        pullPolicy: IfNotPresent
+    externalSnapshotter:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/registry.k8s.io/sig-storage/snapshot-controller
+        tag: v8.2.0
+        pullPolicy: IfNotPresent
+
+# auto-scaler
+CLUSTER_AUTOSCALER_CHART_URL: "" # yes we want this blank because of how the ansible helm module expects OCI to be passed
+CLUSTER_AUTOSCALER_CHART_NAME: oci://855334947981.dkr.ecr.il-central-1.amazonaws.com/cluster-autoscaler
+CLUSTER_AUTOSCALER_LOCATION: il-central-1
+CLUSTER_AUTOSCALER_CONFIG_PRIVATE:
+  image:
+    repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/cluster-autoscaler
+  extraEnv:
+    AWS_STS_REGIONAL_ENDPOINTS: regional # use regional endpoints instead
+  extraArgs:
+    aws-use-static-instance-list: true # this keeps autoscaler from going to the internet for the ec2 list on init, auto-scaler will fail in darksite without this
+
+# EBS CSI DRIVER
+EBS_CSI_DRIVER_CHART_URL: "" # yes we want this blank because of how the ansible helm module expects OCI to be passed
+EBS_CSI_DRIVER_CHART_NAME: oci://855334947981.dkr.ecr.il-central-1.amazonaws.com/aws-ebs-csi-driver
+EBS_CSI_DRIVER_LOCATION: il-central-1
+EBS_CSI_DRIVER_CONFIG_PRIVATE:
+  image:
+    repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver
+  sidecars:
+    provisioner:
+      image:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner
+    attacher:
+      image:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/public.ecr.aws/eks-distro/kubernetes-csi/external-attacher
+    snapshotter:
+      image:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/public.ecr.aws/eks-distro/kubernetes-csi/external-snapshotter/csi-snapshotter
+    livenessProbe:
+      image:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe
+    resizer:
+      image:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/public.ecr.aws/eks-distro/kubernetes-csi/external-resizer
+    nodeDriverRegistrar:
+      image:
+        repository: 855334947981.dkr.ecr.il-central-1.amazonaws.com/public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar

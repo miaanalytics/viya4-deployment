@@ -1,5 +1,10 @@
 # SAS Viya 4 Deployment
 
+## Fork
+
+This project is a fork of sassoftware/viya4-deployment for running in a private AWS VPC
+See example [ansible-vars](examples/ansible-vars.v900.private.yaml) file
+
 ## Table of Contents
 
 - [Overview](#overview)
