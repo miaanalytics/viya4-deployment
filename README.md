@@ -16,6 +16,12 @@ sudo docker save viya4-deployment-private-aws:9.0.0 -o /tmp/viya4-deployment-pri
 aws s3 cp /tmp/viya4-deployment-private-aws_9.0.0.tar s3://mia-sas-viya-mirror
 ```
 
+To use this image add this option to allow Helm running in the container to authenticate to AWS ECR:
+
+```
+--volume ~/.aws:/viya4-deployment/.aws
+```
+
 ## Table of Contents
 
 - [Overview](#overview)
