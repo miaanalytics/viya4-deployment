@@ -1,0 +1,38 @@
+# Create folder tree in EFS
+- name: Mount EFS volume and create folder tree
+  when:
+    - PROVIDER == "aws"
+    - STORAGE_TYPE_BACKEND is defined
+    - STORAGE_TYPE_BACKEND == "efs"
+  tags:
+    - install
+    - update
+  block:
+    - name: Print a reminder message
+      ansible.builtin.debug:
+        msg: "This task will fail if you do not allow inbound NFS traffic on <<PREFIX>>-eks_worker_sg security group for this machine"
+    - name: Mount EFS volume
+      ansible.posix.mount:
+        src: "{{ V4_CFG_RWX_FILESTORE_ENDPOINT }}"
+        path: /viya_share
+        opts: rsize=1048576,wsize=1048576,hard,timeo=60,retrans=2,noresvport
+        state: ephemeral
+        fstype: nfs
+    - name: Create folder tree
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: nobody
+        group: nobody
+        mode: '0777'
+      loop:
+        - /viya_share/pvs
+        - /viya_share/access-clients
+        - /viya_share/access-clients/odbc
+        - /viya_share/access-clients/jdbc
+        - /viya_share/access-clients/oracle
+        - /viya_share/{{ NAMESPACE }}/bin
+        - /viya_share/{{ NAMESPACE }}/data
+        - /viya_share/{{ NAMESPACE }}/homes
+        - /viya_share/{{ NAMESPACE }}/astores
+        
